@@ -3,11 +3,11 @@ const models = require('../models');
 const fs = require('fs');
 
 // Get all medias
-exports.getAllMedias = (req, res) => {
-    getMedias()
-        .then(medias => {  //medias retourne un tableau
-            if(medias.length == 0) return res.status(400).json({ error : "Il n'y a aucun contenu multimédia !"});
-            return res.status(200).json(medias);
+exports.getAllPosts = (req, res) => {
+    getPosts()
+        .then(posts => {  //posts retourne un tableau
+            if(posts.length == 0) return res.status(400).json({ error : "Aucune publications disponibles !"});
+            return res.status(200).json(posts);
         })
         .catch(error => {
             return res.status(400).json(error);
@@ -15,7 +15,7 @@ exports.getAllMedias = (req, res) => {
 }
 
 // Get one item
-exports.getMedia = (req, res) => {
+exports.getPost = (req, res) => {
 
     getMediaById(req.params.id)
         .then(media =>{
@@ -28,7 +28,7 @@ exports.getMedia = (req, res) => {
 }
 
 // Create new item
-exports.createMedia = (req, res) => {
+exports.createPost = (req, res) => {
 
     if(!req.file) return res.status(400).json({ error: "Une image est obligatoire !" });
 
@@ -50,7 +50,7 @@ exports.createMedia = (req, res) => {
 }
 
 // Update a media
-exports.updateMedia = (req, res) => {
+exports.updatePost = (req, res) => {
     var imageUrl;
     
 
@@ -90,7 +90,7 @@ exports.updateMedia = (req, res) => {
 }
 
 // Delete a item
-exports.deleteMedia = (req, res) => {
+exports.deletePost = (req, res) => {
 
     getMediaById(req.params.id)
         .then(media => {
@@ -137,28 +137,28 @@ function getUserById(id) {
     })
 }
 
-function getMedias() {
+function getPosts() {
     return new Promise((resolve, reject) => {
 
-        const medias = models.Media.findAll({
+        const posts = models.Post.findAll({
             order: [
                 ['id', 'DESC']
             ],
             include: [{
                 model: models.User,
-                attributes: ['firstname', 'lastname', 'imgUrl']
+                attributes: ['fullname', 'imgUrl']
             }]
         });
 
-        if(medias) {
-            resolve(medias);
+        if(posts) {
+            resolve(posts);
         } else {
-            reject(Error('Aucunes medias trouvées !'));
+            reject(Error('Aucunes publications disponibles !'));
         }
     })
 }
 
-function getMediaById(id) {
+function getPostById(id) {
     return new Promise((resolve, reject) => {
 
         const media = models.Media.findOne({
@@ -177,7 +177,7 @@ function getMediaById(id) {
     })
 }
 
-function queryCreateMedia(userId, image) {
+function queryCreatePost(userId, image) {
     return new Promise((resolve, reject) => {
 
         const mewMedia = models.Media.create({
@@ -194,7 +194,7 @@ function queryCreateMedia(userId, image) {
     
 }
 
-function queryUpdateMedia(media, image) {
+function queryUpdatePost(media, image) {
     return new Promise((resolve, reject) => {
 
         const updateMedia = media.update({
@@ -210,7 +210,7 @@ function queryUpdateMedia(media, image) {
     })
 }
 
-function queryDeleteMedia(media) {
+function queryDeletePost(media) {
     return new Promise((resolve, reject) => {
 
         const mediaRemove = media.destroy();

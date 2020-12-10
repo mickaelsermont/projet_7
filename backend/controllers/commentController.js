@@ -2,8 +2,8 @@
 const models = require('../models');
 
 // Get all messages
-exports.getAllMessages = (req, res) => {
-    getMessages()
+exports.getAllComments = (req, res) => {
+    getComments()
         .then(messages => {  //data retourne un tableau
             if(messages.length == 0) return res.status(400).json({ error : "Il n'y a aucun messages !"});
             return res.status(200).json(messages);
@@ -27,11 +27,11 @@ exports.getMessage = (req, res) => {
 }
 
 // Create new message
-exports.createMessage = (req, res) => {
+exports.createComment = (req, res) => {
     var text = req.body.text;
     
     // Check text is null
-    if(text == null) return res.status(400).json({ error: 'Le champs texte est vide.' });
+    if(text == null) return res.status(400).json({ error: 'Le commentaire est vide.' });
 
     // Check text length
     if(text.length < 9 || text.length >= 1000) {
