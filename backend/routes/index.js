@@ -6,7 +6,7 @@ const multer = require('../middleware/multer-config.js');
 
 var user = require('../controllers/userController');
 var comment = require('../controllers/commentController');
-var post = require('../controllers/postsController');
+var post = require('../controllers/postController');
 
 // Router
 exports.router = (function() {

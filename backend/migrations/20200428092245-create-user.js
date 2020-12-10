@@ -8,11 +8,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      firstname: {
-        allowNull: false,
-        type: Sequelize.STRING
-      },
-      lastname: {
+      fullname: {
         allowNull: false,
         type: Sequelize.STRING
       },
@@ -26,7 +22,7 @@ module.exports = {
         type: Sequelize.STRING
       },
       imgUrl: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.STRING
       },
       isAdmin: {
