@@ -2,7 +2,7 @@
 const models = require('../models');
 const fs = require('fs');
 
-// Get all medias
+// Get all posts
 exports.getAllPosts = (req, res) => {
     getPosts()
         .then(posts => {  //posts retourne un tableau
@@ -14,63 +14,67 @@ exports.getAllPosts = (req, res) => {
         })
 }
 
-// Get one item
+// Get one post
 exports.getPost = (req, res) => {
 
-    getMediaById(req.params.id)
-        .then(media =>{
-            if(media == null) return res.status(400).json({ error : "Aucun contenu multimédia trouvé !"});
-            res.status(200).json(media);
+    getPostById(req.params.id)
+        .then(post =>{
+            if(post == null) return res.status(400).json({ error : "Aucunes publications disponibles !"});
+            res.status(200).json(post);
         })
         .catch(error => {
             res.status(400).json(error);
         })
 }
 
-// Create new item
+// Create new post
 exports.createPost = (req, res) => {
+    var imageUrl = null;
+    var message = req.body.text;
 
-    if(!req.file) return res.status(400).json({ error: "Une image est obligatoire !" });
-
-    // Image url
-    var imageUrl = `${req.protocol}://${req.get('host')}/images/medias/${req.file.filename}`;
+    if(req.file) {
+        // Image url
+        imageUrl = `${req.protocol}://${req.get('host')}/images/posts/${req.file.filename}`;
+    }
 
     getUserById(req.userId)
         .then(user => {
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
-            return queryCreateMedia(user.id, imageUrl);
+            return queryCreatePost(user.id, imageUrl, message);
         })
-        .then(media => {
-            res.status(200).json({ success: "L'annonce a bien été créé !" });
+        .then(post => {
+            res.status(200).json({ success: "La publication a bien été crée !" });
         })
         .catch(error => {
             res.status(400).json({ error });
         })
 }
 
-// Update a media
+// Update a post
 exports.updatePost = (req, res) => {
     var imageUrl;
-    
+    var message = req.body.text;
 
-    getMediaById(req.params.id)
-        .then(media => {
-            if(!media) return res.status(400).json({ error: "L'annonce n'existe pas !" });
+    // ajout de controle pour text publication
+    
+    getPostById(req.params.id)
+        .then(post => {
+            if(!post) return res.status(400).json({ error: "La publication n'existe pas !" });
 
             // Vérifie si c'est l'auteur ou un admin sinon pas accès
-            if(media.UserId !== req.userId) {
+            if(post.UserId !== req.userId) {
                 if(!req.isAdmin) return res.status(401).json({ error: 'Accès interdit !' });
             }
 
             // Reprend l'image dans la bdd si aucune image est ajoutée
             if(!req.file) { 
-                imageUrl = media.mediaUrl; 
+                imageUrl = post.mediaUrl; 
             } else {
-                imageUrl = `${req.protocol}://${req.get('host')}/images/medias/${req.file.filename}`;
+                imageUrl = `${req.protocol}://${req.get('host')}/images/posts/${req.file.filename}`;
 
                 // Supprime l'ancienne image
-                const filename = media.mediaUrl.split('/images/')[1];
+                const filename = post.mediaUrl.split('/images/')[1];
 
                 fs.unlink("images/"+filename, function (error) {
                     if (error) throw error;
@@ -79,30 +83,30 @@ exports.updatePost = (req, res) => {
                 }); 
             }
 
-            return queryUpdateMedia(media, imageUrl);
+            return queryUpdatePost(post, imageUrl, message);
         })
         .then(results => {
-            res.status(200).json({ success: "Le media a été modifié !" });
+            res.status(200).json({ success: "La publication a été modifié !" });
         })
         .catch(error => {
             res.status(400).json({ error });
         })
 }
 
-// Delete a item
+// Delete a post
 exports.deletePost = (req, res) => {
 
-    getMediaById(req.params.id)
-        .then(media => {
-            if(!media) return res.status(400).json({ error: "Le contenu multimédia n'existe pas !" });
+    getPostById(req.params.id)
+        .then(post => {
+            if(!post) return res.status(400).json({ error: "La publication n'existe pas !" });
             
             // Vérifie si c'est l'auteur ou un admin sinon pas accès
-            if(media.UserId !== req.userId) {
+            if(post.UserId !== req.userId) {
                 if(!req.isAdmin) return res.status(401).json({ error: 'Accès interdit !' });
             }
 
             // Supprime l'ancienne image
-            const filename = media.mediaUrl.split('/images/')[1];
+            const filename = post.mediaUrl.split('/images/')[1];
 
             fs.unlink("images/"+filename, function (error) {
                 if (error) throw error;
@@ -110,10 +114,10 @@ exports.deletePost = (req, res) => {
                 console.log('Image supprimée !');
             }); 
 
-            return queryDeleteMedia(media);
+            return queryDeletePost(post);
         })
         .then(results => {
-            res.status(200).json({ success: 'Le contenu multimédia a été supprimé !' });
+            res.status(200).json({ success: 'La publication a été supprimé !' });
         })
         .catch(error => {
             res.status(400).json({ error });
@@ -125,7 +129,7 @@ function getUserById(id) {
     return new Promise((resolve, reject) => {
 
         const user = models.User.findOne({
-            attributes: ['id', 'firstname', 'lastname', 'email', 'imgUrl'],
+            attributes: ['id', 'fullname' , 'email', 'imgUrl'],
             where: { id: id }
         });
 
@@ -142,7 +146,7 @@ function getPosts() {
 
         const posts = models.Post.findAll({
             order: [
-                ['id', 'DESC']
+                ['created_at', 'DESC']
             ],
             include: [{
                 model: models.User,
@@ -161,43 +165,45 @@ function getPosts() {
 function getPostById(id) {
     return new Promise((resolve, reject) => {
 
-        const media = models.Media.findOne({
+        const post = models.Post.findOne({
             where: { id: id },
             include: [{
                 model: models.User,
-                attributes: ['firstname', 'lastname', 'imgUrl']
+                attributes: ['fullname' , 'imgUrl']
             }]
         });
 
-        if(media) {
-            resolve(media);
+        if(post) {
+            resolve(post);
         } else {
-            reject(Error('Aucune annonce trouvée !'));
+            reject(Error('Aucune publication trouvée !'));
         }
     })
 }
 
-function queryCreatePost(userId, image) {
+function queryCreatePost(userId, image, message) {
     return new Promise((resolve, reject) => {
 
-        const mewMedia = models.Media.create({
+        const new_post = models.Post.create({
+            text: message,
             mediaUrl: image,
             UserId: userId
         });
 
-        if(mewMedia) {
-            resolve(mewMedia);
+        if(new_post) {
+            resolve(new_post);
         } else {
-            reject(Error("Erreur dans la creation du média !"));
+            reject(Error("Erreur dans la creation de la publication !"));
         }
     })
     
 }
 
-function queryUpdatePost(media, image) {
+function queryUpdatePost(post, image, message) {
     return new Promise((resolve, reject) => {
 
-        const updateMedia = media.update({
+        const updateMedia = post.update({
+            text: message,
             mediaUrl: image,
             updatedAt: new Date()
         });
@@ -205,20 +211,20 @@ function queryUpdatePost(media, image) {
         if(updateMedia) {
             resolve(updateMedia);
         } else {
-            reject(Error("Erreur dans la creation du média !"));
+            reject(Error("Erreur dans la creation de la publication !"));
         }
     })
 }
 
-function queryDeletePost(media) {
+function queryDeletePost(post) {
     return new Promise((resolve, reject) => {
 
-        const mediaRemove = media.destroy();
+        const remove_post = post.destroy();
 
-        if(mediaRemove) {
+        if(remove_post) {
             resolve(true);
         } else {
-            reject(Error("Erreur dans la suppression du média !"));
+            reject(Error("Erreur dans la suppression de la publication !"));
         }
     })
 }
