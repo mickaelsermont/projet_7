@@ -18,14 +18,11 @@ exports.register = (req, res) => {
     // Params
     var imageUrl;
     var email      = req.body.email;
-    var nom        = req.body.lastname;
-    var prenom     = req.body.firstname;
+    var fullname   = req.body.fullname;
     var motdepasse = req.body.password;
 
-    // console.log(req.body)
-    // console.log(req.file)
     // Check input null
-    if (!email || !motdepasse || !nom || !prenom) {
+    if (!email || !motdepasse || !fullname) {
         return res.status(400).json({ error: 'Certains champs sont vides !' });
     }
 
@@ -34,19 +31,11 @@ exports.register = (req, res) => {
         return res.status(400).json({ error: "Adresse mail non valide" });
     }
 
-    // Check first name
-    if (prenom.length > 21 || prenom.length < 2) {
-        return res.status(400).json({ error: 'Le prénom doit avoir une longueur de 3 à 19 caractères.' });
+    // Check fullname
+    if (fullname.length > 26 || fullname.length < 2) {
+        return res.status(400).json({ error: 'Le nom doit avoir une longueur de 3 à 25 caractères.' });
     }
-    if(!prenom.match(LETTERS_REGEX)) {
-        return res.status(400).json({ error: 'Le prénom doit contenir que des lettres' });
-    }
-
-    // Check last name
-    if (nom.length >= 20 || nom.length < 3) {
-        return res.status(400).json({ error: 'Le nom doit avoir une longueur de 3 à 19 caractères.' });
-    }
-    if(!nom.match(LETTERS_REGEX)) {
+    if(!fullname.match(LETTERS_REGEX)) {
         return res.status(400).json({ error: 'Le nom doit contenir que des lettres' });
     }
 
@@ -54,10 +43,6 @@ exports.register = (req, res) => {
     if (!PASSWORD_REGEX.test(motdepasse)) {
         return res.status(400).json({ error: 'Le mot de passe est invalide. Il doit avoir une longueur de 4 à 16 caractères et contenir au moins 1 chiffre.' });
     }
-    
-    // Check image 
-    if(!req.file) return res.status(400).json({ error: "Une image est obligatoire !" });
-    imageUrl = `${req.protocol}://${req.get('host')}/images/profiles/${req.file.filename}`;
 
     // Get User by email
     getUserByEmail(email)
@@ -71,9 +56,9 @@ exports.register = (req, res) => {
             models.User.create({
                 firstname: prenom,
                 lastname: nom,
-                email: email,
+                email: email, /* crypt email with crypto */
                 password: bcryptedPassword,
-                imgUrl: imageUrl,
+                imgUrl: "http://localhost:3000/images/profiles/default.jpg",
                 isAdmin: false
             });
 
@@ -166,7 +151,7 @@ exports.getUserProfile = (req, res) => {
 exports.updateUserProfile = (req, res) => {
 
     // Check input null
-    if (!req.body.email || !req.body.firstname || !req.body.lastname) {
+    if (!req.body.email || !req.body.fullname || !req.body.bio) {
         return res.status(400).json({ error: 'Certains champs sont vides !' });
     }
 
@@ -176,18 +161,18 @@ exports.updateUserProfile = (req, res) => {
     }
 
     // Check first name
-    if (req.body.firstname.length > 21 || req.body.firstname.length < 2) {
-        return res.status(400).json({ error: 'Le prénom doit avoir une longueur de 3 à 19 caractères.' });
+    if (req.body.fullname.length > 26 || req.body.fullname.length < 2) {
+        return res.status(400).json({ error: 'Le prénom doit avoir une longueur de 3 à 25 caractères.' });
     }
-    if(!req.body.firstname.match(LETTERS_REGEX)) {
+    if(!req.body.fullname.match(LETTERS_REGEX)) {
         return res.status(400).json({ error: 'Le prénom doit contenir que des lettres' });
     }
 
     // Check last name
-    if (req.body.lastname.length >= 20 || req.body.lastname.length < 3) {
+    if (req.body.bio.length >= 20 || req.body.bio.length < 3) {
         return res.status(400).json({ error: 'Le nom doit avoir une longueur de 3 à 19 caractères.' });
     }
-    if(!req.body.lastname.match(LETTERS_REGEX)) {
+    if(!req.body.bio.match(LETTERS_REGEX)) {
         return res.status(400).json({ error: 'Le nom doit contenir que des lettres' });
     }
 
@@ -214,7 +199,7 @@ exports.updateUserProfile = (req, res) => {
             return queryUpdateUser(user, req.body, imageUrl);
         })
         .then(results => {
-            res.status(200).json({ success: "Compte modifié !"});
+            res.status(200).json({ success: "Profil modifié !"});
         })
         .catch(error => {
             res.status(400).json({ error });
@@ -228,6 +213,7 @@ exports.deleteUserProfile = (req, res) => {
         .then(user => {
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
+            // Delete all likes / comment / posts => "bon ordre"
             // Supprime l'ancienne image
             const filename = user.imgUrl.split('/images/')[1];
 
@@ -271,8 +257,8 @@ function getUserByEmail(email) {
 
         // Only function who to get password
         const user = models.User.findOne({
-            attributes: ['id', 'firstname', 'lastname', 'email', 'imgUrl', 'password', 'isAdmin'],
-            where: { email: email }
+            attributes: ['id', 'fullname', 'bio', 'email', 'imgUrl', 'password', 'isAdmin'],
+            where: { email: email } /* add crypto for decrypt */
         });
 
         if(user) {
@@ -288,10 +274,10 @@ function queryUpdateUser(user, formParams, imageUrl) {
         
         const userModify = user.update(
             {
-                firstname: formParams.firstname,
-                lastname: formParams.lastname,
-                email: formParams.email,
                 imgUrl: imageUrl,
+                bio: formParams.bio,
+                email: formParams.email,
+                fullname: formParams.fullname,
                 updatedAt: new Date()
             }
         );
