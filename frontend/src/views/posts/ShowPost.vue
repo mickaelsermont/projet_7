@@ -1,9 +1,6 @@
 <template>
     <div>
         <b-row>
-            <b-col sm="8">
-                <h3>Media</h3>
-            </b-col>
             <b-col sm="4">
                 <template v-if="media.UserId === userInfos.id || userInfos.isAdmin === true">
                     <div class="float-right">

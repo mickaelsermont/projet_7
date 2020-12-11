@@ -2,6 +2,7 @@
 const bcrypt = require('bcrypt');
 const models = require('../models');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const dotenv = require('dotenv');
 const fs = require('fs');
 
@@ -10,19 +11,17 @@ dotenv.config();
 // Constants
 const EMAIL_REGEX     = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const PASSWORD_REGEX  = /^(?=.*\d).{4,16}$/;
-const LETTERS_REGEX = /^[A-Za-z]+$/;
+const LETTERS_REGEX = /^[\w\sA-Za-z]+$/;
 
 
 // Register User 
 exports.register = (req, res) => {
-    // Params
-    var imageUrl;
     var email      = req.body.email;
     var fullname   = req.body.fullname;
-    var motdepasse = req.body.password;
-
+    var password = req.body.password;
+    
     // Check input null
-    if (!email || !motdepasse || !fullname) {
+    if (!email || !password || !fullname) {
         return res.status(400).json({ error: 'Certains champs sont vides !' });
     }
 
@@ -40,29 +39,30 @@ exports.register = (req, res) => {
     }
 
     // Check password
-    if (!PASSWORD_REGEX.test(motdepasse)) {
+    if (!PASSWORD_REGEX.test(password)) {
         return res.status(400).json({ error: 'Le mot de passe est invalide. Il doit avoir une longueur de 4 à 16 caractères et contenir au moins 1 chiffre.' });
     }
 
+    // Hash email before insert in db
+    var hash_email = crypto.createHash(process.env.CRYPTO_HASH).update(email).digest(process.env.CRYPTO_CODING_BASE);
+
     // Get User by email
-    getUserByEmail(email)
+    getUserByEmail(hash_email)
         .then(user => {
             if(user) return res.status(400).json({ error: "L'utilisateur existe déjà !" });
 
-            return cryptPassword(motdepasse);
+            return cryptPassword(password);
         })
         .then(bcryptedPassword => {
             // Create User in database
             models.User.create({
-                firstname: prenom,
-                lastname: nom,
-                email: email, /* crypt email with crypto */
+                fullname: fullname,
+                email: hash_email,
                 password: bcryptedPassword,
                 imgUrl: "http://localhost:3000/images/profiles/default.jpg",
                 isAdmin: false
             });
 
-            // return userId & success
             return res.status(200).json({ success: 'Utilisateur enregistré !' });
         })
         .catch(error => {
@@ -91,13 +91,15 @@ exports.login = (req, res) => {
         return res.status(400).json({ error: 'Le mot de passe est invalide. Il doit avoir une longueur de 4 à 16 caractères et contenir au moins 1 chiffre.' });
     }
 
+    var hash_email = crypto.createHash(process.env.CRYPTO_HASH).update(email).digest(process.env.CRYPTO_CODING_BASE);
+
     // Get User by email
-    getUserByEmail(email)
+    getUserByEmail(hash_email)
         .then(data => {
             const user = data.dataValues;
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
-            if(!comparePassword(password, user.password)) return res.status(401).json(error);
+            if(!bcrypt.compareSync(password, user.password)) return res.status(401).json({ error: "Mot de passe incorrect" });
 
             // Generate token
             var token = jwt.sign(
@@ -109,8 +111,8 @@ exports.login = (req, res) => {
                 { expiresIn: '12h' }
             );
 
-            // return userId & token
-            res.status(200).json({ token: token });
+            // return token for frontend
+            res.status(200).json({ userID : user.id, token: token });
         })
         .catch(error => {
             res.status(401).json({ error });
@@ -133,10 +135,23 @@ exports.logout = (req, res) => {
         })
 }
 
+// Get own User for login
+exports.getUserLogin = (req, res) => {
+    getUserById(req.userId)
+        .then(user =>{
+            if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
+
+            return res.status(200).json(user);
+        })
+        .catch(error => {
+            return res.status(400).json(error);
+        })
+}
+
 // Get User Profile
 exports.getUserProfile = (req, res) => {
 
-    getUserById(req.userId)
+    getUserById(req.params.id)/* req.userId */
         .then(user =>{
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
@@ -239,7 +254,7 @@ function getUserById(id) {
     return new Promise((resolve, reject) => {
 
         const user = models.User.findOne({
-            attributes: ['id', 'firstname', 'lastname', 'email', 'imgUrl', 'isAdmin'],
+            attributes: ['id', 'fullname', 'email', 'imgUrl', 'isAdmin'],
             where: { id: id }
         });
 
@@ -251,7 +266,7 @@ function getUserById(id) {
     })
 }
 
-function getUserByEmail(email) {
+function getUserByEmail(email) { /* ONLY LOGIN & REGISTER */
     return new Promise((resolve, reject) => {
 
 
@@ -303,19 +318,6 @@ function queryDeleteUser(user) {
     })
 }
 
-function comparePassword(formPassword, dbPassword) {
-    return new Promise((resolve, reject) => {
-
-        const result = bcrypt.compareSync(formPassword, dbPassword);
-
-        if(result) {
-            resolve(true);
-        } else {
-            reject('Le mot de passe est incorrect !');
-        }
-    })
-    
-}
 
 function cryptPassword(password) {
     return new Promise((resolve, reject) => {

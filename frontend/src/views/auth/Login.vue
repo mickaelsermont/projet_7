@@ -32,7 +32,7 @@
     data() {
       return {
         form: {
-          email: '',
+          email: 'mickael@gmail.com',
           password: ''
         },
         error: ''
@@ -49,7 +49,7 @@
             this.error = res
           }
           this.$router.replace({
-            name: 'dashboard',
+            name: 'postsList',
             params: { message: "Vous êtes connecté !"}
           })
         })

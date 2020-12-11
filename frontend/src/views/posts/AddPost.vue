@@ -1,7 +1,5 @@
 <template>
     <div>
-        <h3>Ajouter un media</h3>
-        <hr>
         <b-alert show fade variant="danger" v-if="error"> {{ error }}</b-alert>
         <!-- Create Item Form -->
         <b-form @submit.prevent="createMedia" enctype="multipart/form-data">
@@ -55,7 +53,6 @@
                 } catch (err) {
                     this.error = err.response.data.error
                 }
-
             }
         }
     }

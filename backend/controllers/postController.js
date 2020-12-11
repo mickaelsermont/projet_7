@@ -146,7 +146,7 @@ function getPosts() {
 
         const posts = models.Post.findAll({
             order: [
-                ['created_at', 'DESC']
+                ['createdAt', 'DESC']
             ],
             include: [{
                 model: models.User,

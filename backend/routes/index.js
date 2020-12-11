@@ -18,6 +18,7 @@ exports.router = (function() {
     router.post('/auth/register/', user.register);
 
     // Users routes
+    router.get('/users/me', auth, user.getUserLogin);
     router.get('/users/:id', auth, user.getUserProfile);
     router.put('/users/:id', auth, multer, user.updateUserProfile);
     router.delete('/users/:id', auth, user.deleteUserProfile);

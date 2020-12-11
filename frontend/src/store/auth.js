@@ -33,12 +33,14 @@ export default {
             try {
                 let response = await axios.post("auth/login", credentials)
                 
+                // let results = response.data
+                
+                // return dispatch('attempt', results)
                 return dispatch('attempt', response.data.token)
             } catch (err) {
                 // console.log(err.response.data);
                 return err.response.data.error
             }
-            
         },
 
         async attempt ({ commit, state }, token) {
