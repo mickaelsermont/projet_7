@@ -24,9 +24,9 @@ exports.router = (function() {
 
     // Comments routes
     router.get('/comments/', auth, comment.getAllComments);
-    router.get('/comments/:id', auth, comment.getComment);
+    // router.get('/comments/:id', auth, comment.getComment);
     router.post('/comments/', auth, comment.createComment);
-    router.put('/comments/:id', auth, comment.updateComment);
+    // router.put('/comments/:id', auth, comment.updateComment);
     router.delete('/comments/:id', auth, comment.deleteComment);
 
     // Posts routes

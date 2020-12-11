@@ -1,32 +1,31 @@
 // Imports
 const models = require('../models');
 
-// Get all messages
+// Get all comments
 exports.getAllComments = (req, res) => {
     getComments()
-        .then(messages => {  //data retourne un tableau
-            if(messages.length == 0) return res.status(400).json({ error : "Il n'y a aucun messages !"});
-            return res.status(200).json(messages);
+        .then(comments => {  
+            if(comments.length == 0) return res.status(400).json({ error : "Il n'y a aucun commentaire !"});
+            return res.status(200).json(comments);
         })
         .catch(error => {
             return res.status(400).json(error);
         })
 }
 
-// Get one message
-exports.getMessage = (req, res) => {
-
-    getMessageById(req.params.id)
-        .then(message =>{
-            if(message == null) return res.status(400).json({ error : "Aucun message trouvé !"});
-            res.status(200).json(message);
+// Get one comment
+exports.getComment = (req, res) => {
+    getCommentById(req.params.id)
+        .then(comment =>{
+            if(comment == null) return res.status(400).json({ error : "Aucun commentaire trouvé !"});
+            res.status(200).json(comment);
         })
         .catch(error => {
             res.status(400).json({ error });
         })
 }
 
-// Create new message
+// Create new comment
 exports.createComment = (req, res) => {
     var text = req.body.text;
     
@@ -42,41 +41,41 @@ exports.createComment = (req, res) => {
         .then(user => {
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
-            return queryCreateMessage(user.id, text);
+            return queryCreateComment(user.id, text);
         })
-        .then(message => {
-            res.status(200).json({ success: 'Le message a bien été créé !' });
+        .then(comment => {
+            res.status(200).json({ success: 'Le commentaire a bien été posté !' });
         })
         .catch(error => {
             res.status(400).json({ error });
         })
 }
 
-// Update a message
-exports.updateMessage = (req, res) => {
+// Update a comment
+exports.updateComment = (req, res) => {
     var text = req.body.text;
     
     // Check text is null
     if(text == null) return res.status(400).json({ error: 'Le champs texte est vide.' });
 
     // Check text length
-    if(text.length < 9 || text.length >= 1000) {
-        return res.status(400).json({ error: 'Le texte doit avoir une longueur de 10 à 100 caractères.' });
+    if(text.length < 2 || text.length >= 1000) {
+        return res.status(400).json({ error: 'Le texte doit avoir une longueur de 3 à 1000 caractères.' });
     }
 
-    getMessageById(req.params.id)
-        .then(message => {
-            if(!message) return res.status(400).json({ error: "Le message n'existe pas !" });
+    getCommentById(req.params.id)
+        .then(comment => {
+            if(!comment) return res.status(400).json({ error: "Le commentaire n'existe pas !" });
 
             // Vérifie si c'est l'auteur ou un admin sinon pas accès
-            if(message.UserId !== req.userId) {
+            if(comment.UserId !== req.userId) {
                 if(!req.isAdmin) return res.status(401).json({ error: 'Accès interdit !' });
             }
 
-            return queryUpdateMessage(message, text);
+            return queryUpdateComment(comment, text);
         })
         .then(results => {
-            res.status(200).json({ success: 'Message modifié !' });
+            res.status(200).json({ success: 'Commentaire modifié !' });
         })
         .catch(error => {
             res.status(400).json({ error });
@@ -84,21 +83,20 @@ exports.updateMessage = (req, res) => {
 }
 
 // Delete a message
-exports.deleteMessage = (req, res) => {
-
-    getMessageById(req.params.id)
-        .then(message => {
-            if(!message) return res.status(400).json({ error: "Le message n'existe pas !" });
+exports.deleteComment = (req, res) => {
+    getCommentById(req.params.id)
+        .then(comment => {
+            if(!comment) return res.status(400).json({ error: "Le commentaire n'existe pas !" });
             
             // Vérifie si c'est l'auteur ou un admin sinon pas accès
-            if(message.UserId !== req.userId) {
+            if(comment.UserId !== req.userId) {
                 if(!req.isAdmin) return res.status(401).json({ error: 'Accès interdit !' });
             }
 
-            return queryDeleteMessage(message);
+            return queryDeleteComment(comment);
         })
         .then(results => {
-            res.status(200).json({ success: 'Message supprimé !' });
+            res.status(200).json({ success: 'Commentaire supprimé !' });
         })
         .catch(error => {
             res.status(400).json({ error });
@@ -110,7 +108,7 @@ function getUserById(id) {
     return new Promise((resolve, reject) => {
 
         const user = models.User.findOne({
-            attributes: ['id', 'firstname', 'lastname', 'email', 'imgUrl'],
+            attributes: ['id', 'fullname', 'imgUrl'],
             where: { id: id }
         });
 
@@ -122,88 +120,88 @@ function getUserById(id) {
     })
 }
 
-function getMessages() {
+function getComments() {
     return new Promise((resolve, reject) => {
 
-        const messages = models.Message.findAll({
+        const comments = models.Comments.findAll({
             order: [
                 ['id', 'DESC']
             ],
             include: [{
                 model: models.User,
-                attributes: ['firstname', 'lastname', 'imgUrl']
+                attributes: ['fullname', 'imgUrl']
             }]
         });
 
-        if(messages) {
-            resolve(messages);
+        if(comments) {
+            resolve(comments);
         } else {
-            reject(Error('Aucun messages trouvés !'));
+            reject(Error('Aucun commentaires trouvés !'));
         }
     })
 }
 
-function getMessageById(id) {
+function getCommentById(id) {
     return new Promise((resolve, reject) => {
 
-        const message = models.Message.findOne({
+        const comment = models.Comment.findOne({
             where: { id: id },
             include: [{
                 model: models.User,
-                attributes: ['firstname', 'lastname', 'imgUrl']
+                attributes: ['fullname' , 'imgUrl']
             }]
         });
 
-        if(message) {
-            resolve(message);
+        if(comment) {
+            resolve(comment);
         } else {
-            reject(Error('Aucun message trouvé !'));
+            reject(Error('Aucun commentaire trouvé !'));
         }
     })
 }
 
-function queryCreateMessage(userId, text) {
+function queryCreateComment(userId, text) {
     return new Promise((resolve, reject) => {
 
-        const newMessage = models.Message.create({
+        const new_comment = models.Comment.create({
             text: text,
             UserId: userId
         });
 
-        if(newMessage) {
-            resolve(newMessage);
+        if(new_comment) {
+            resolve(new_comment);
         } else {
-            reject(Error('Erreur dans la creation du message !'));
+            reject(Error('Erreur dans la creation du commentaire !'));
         }
     })
     
 }
 
-function queryUpdateMessage(message, text) {
+function queryUpdateComment(comment, text) {
     return new Promise((resolve, reject) => {
 
-        const updateMessage = message.update({
+        const update_comment = comment.update({
             text: text,
             updatedAt: new Date()
         });
 
-        if(updateMessage) {
-            resolve(updateMessage);
+        if(update_comment) {
+            resolve(update_comment);
         } else {
-            reject(Error('Erreur dans la creation du message !'));
+            reject(Error('Erreur dans la modification du commentaire !'));
         }
     })
 }
 
-function queryDeleteMessage(message) {
+function queryDeleteComment(comment) {
     return new Promise((resolve, reject) => {
 
-        const messageRemove = message.destroy();
+        const remove_comment = comment.destroy();
 
-        if(messageRemove) {
-            resolve(messageRemove);
+        if(remove_comment) {
+            resolve(remove_comment);
         } else {
-            reject(Error('Erreur dans la suppression du message !'));
+            reject(Error('Erreur dans la suppression du commentaire !'));
         }
     })
 }
