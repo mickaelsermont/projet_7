@@ -1,24 +1,25 @@
 <template>
     <div>
         <b-row align-h="center">
-            <b-col cols="8">
-                <b-alert show dismissible fade variant="success" v-if="$route.params.message"> {{ $route.params.message }}</b-alert>
+
+
+            <b-col cols="7">
+                <b-alert 
+                    show
+                    dismissible
+                    fade
+                    variant="success" v-if="$route.params.message"
+                    > {{ $route.params.message }}</b-alert>
         
                 <PostCard v-for="post in posts" :key="post.id" :post="post" class="mb-2" />
-                <b-alert show variant="secondary" v-if="posts.length == null">Il n'y a aucun contenu !</b-alert>
+                <!-- <b-alert show variant="secondary" v-if="posts.length == null">Il n'y a aucun contenu !</b-alert> -->
+                <div class="d-flex justify-content-center mb-3" v-if="posts.length == null">
+                    <b-spinner label="Loading..."></b-spinner>
+                </div>
             </b-col>
         </b-row>
-        <!-- <b-row>
-            <b-col sm="8">
-                <h3>Forum multimédia</h3>
-            </b-col>
-            <b-col sm="4">
-                <router-link :to="{ name: 'addMedia'}">
-                    <b-button class="float-right" variant="success">Ajouter</b-button>
-                </router-link>
-            </b-col>
-        </b-row> -->
-        </div>
+        
+    </div>
 </template>
 
 <script>
@@ -47,3 +48,7 @@
         }
     };
 </script>
+
+<style lang="scss" scoped>
+
+</style>

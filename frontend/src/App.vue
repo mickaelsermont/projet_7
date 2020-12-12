@@ -19,6 +19,9 @@
 </script>
 
 <style>
+  body {
+    background-color:rgb(240, 240, 240)!important;
+  }
   #preview {
     display: flex;
     justify-content: center;

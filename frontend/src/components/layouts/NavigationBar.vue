@@ -3,8 +3,8 @@
         <b-navbar toggleable="lg" class="mb-4" type="dark" variant="dark">
             <b-container>
                 <b-navbar-brand href="#">
-                    <router-link :to="{ name: 'dashboard'}">
-                        <img src="@/assets/logos/icon-left-font-monochrome-white.svg" height="38" class="d-inline-block align-top" alt="">
+                    <router-link :to="{ name: 'postsList'}">
+                        <img src="@/assets/logos/icon-left-font-monochrome-white.svg" height="36" class="d-inline-block align-top" alt="">
                     </router-link>
                 </b-navbar-brand>
 
@@ -15,12 +15,18 @@
                     <b-navbar-nav class="ml-auto">
                         <template v-if="authentificated">
                             <b-nav-item>
-                                <router-link :to="{ name: 'dashboard'}">Dashboard</router-link>
+                                <router-link :to="{ name: 'addPost'}">
+                                    <b-icon icon="plus-circle" font-scale="1.5" v-b-popover.hover.left="'Ajouter une publication'"></b-icon>
+                                </router-link>
                             </b-nav-item>
                             <b-nav-item>
-                                <router-link :to="{ name: 'userProfile'}">{{ user.firstname }} {{ user.lastname }}</router-link>
+                                <router-link :to="{ name: 'userProfile'}">
+                                    <b-icon icon="person-fill" font-scale="1.5" v-b-popover.hover.bottom="user.fullname"></b-icon>
+                                </router-link>
                             </b-nav-item>
-                            <b-nav-item @click.prevent="signOut">Deconnexion</b-nav-item>
+                            <b-nav-item @click.prevent="signOut">
+                                <b-icon icon="box-arrow-right" font-scale="1.5" v-b-popover.hover.right="'Deconnexion'"></b-icon>
+                            </b-nav-item>
                         </template>
 
                         <template v-else>
