@@ -151,6 +151,13 @@ function getPosts() {
             include: [{
                 model: models.User,
                 attributes: ['fullname', 'imgUrl']
+            },
+            {
+                model: models.Comment,
+                include: [{
+                    model: models.User,
+                    attributes: ['fullname', 'imgUrl']
+                }]
             }]
         });
 

@@ -20,7 +20,7 @@
 
 <style>
   body {
-    background-color:rgb(240, 240, 240)!important;
+    background-color: #ecebe9!important;
   }
   #preview {
     display: flex;

@@ -1,9 +1,8 @@
 <template>
     <div>
-        <b-row align-h="center">
 
-
-            <b-col cols="7">
+        <b-row>
+            <b-col md="7" offset-md="3">
                 <b-alert 
                     show
                     dismissible
@@ -11,7 +10,7 @@
                     variant="success" v-if="$route.params.message"
                     > {{ $route.params.message }}</b-alert>
         
-                <PostCard v-for="post in posts" :key="post.id" :post="post" class="mb-2" />
+                <PostCard v-for="post in posts" :key="post.id" :post="post" :reviews="post.Comments" class="mb-2" />
                 <!-- <b-alert show variant="secondary" v-if="posts.length == null">Il n'y a aucun contenu !</b-alert> -->
                 <div class="d-flex justify-content-center mb-3" v-if="posts.length == null">
                     <b-spinner label="Loading..."></b-spinner>
@@ -40,6 +39,7 @@
             getPosts() {
                 axios.get('posts').then(response => {
                     this.posts = response.data
+                    console.log(response.data);
                 });
             }
         },
@@ -49,6 +49,3 @@
     };
 </script>
 
-<style lang="scss" scoped>
-
-</style>

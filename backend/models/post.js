@@ -3,6 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Post = sequelize.define('Post', {
     text: DataTypes.TEXT,
     mediaUrl: DataTypes.STRING,
+    countLikes: DataTypes.INTEGER,
     userID: DataTypes.INTEGER
   }, {});
   Post.associate = function(models) {

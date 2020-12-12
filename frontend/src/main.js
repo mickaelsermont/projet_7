@@ -7,6 +7,8 @@ import router from "./router";
 import store from "./store";
 import axios from "axios";
 
+Vue.use(require('vue-moment'));
+
 require('./store/subscriber');
 
 axios.defaults.baseURL = 'http://localhost:3000/api/';

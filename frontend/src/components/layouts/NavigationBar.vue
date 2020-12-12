@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-navbar toggleable="lg" class="mb-4" type="dark" variant="dark">
+        <b-navbar toggleable="lg" class="mb-4 bg-darkblue">
             <b-container>
                 <b-navbar-brand href="#">
                     <router-link :to="{ name: 'postsList'}">
@@ -73,10 +73,13 @@
     }
 </script>
 
-<style scoped>
+<style>
     .nav-item a {
         color: #fff!important;
         text-transform: capitalize;
         /* text-decoration: none; */
+    }
+    .bg-darkblue {
+        background-color: rgb(35, 49, 75)!important;
     }
 </style>
