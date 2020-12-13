@@ -10,11 +10,12 @@
                     variant="success" v-if="$route.params.message"
                     > {{ $route.params.message }}</b-alert>
         
-                <PostCard v-for="post in posts" :key="post.id" :post="post" :reviews="post.Comments" class="mb-2" />
-                <!-- <b-alert show variant="secondary" v-if="posts.length == null">Il n'y a aucun contenu !</b-alert> -->
+                <PostCard v-for="post in posts" :key="post.id" :post="post" :reviews="post.Comments" :getData="getPosts" class="mb-2" />
+
                 <div class="d-flex justify-content-center mb-3" v-if="posts.length == null">
                     <b-spinner label="Loading..."></b-spinner>
                 </div>
+                <!-- <b-alert show variant="secondary" v-if="posts.length == null">Il n'y a aucun contenu !</b-alert> -->
             </b-col>
         </b-row>
         

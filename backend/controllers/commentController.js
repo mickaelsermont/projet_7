@@ -27,21 +27,22 @@ exports.getComment = (req, res) => {
 
 // Create new comment
 exports.createComment = (req, res) => {
-    var text = req.body.text;
+    var text    = req.body.text;
+    var post_id = req.body.post_id;
     
     // Check text is null
     if(text == null) return res.status(400).json({ error: 'Le commentaire est vide.' });
 
     // Check text length
-    if(text.length < 9 || text.length >= 1000) {
-        return res.status(400).json({ error: 'Le texte doit avoir une longueur de 10 à 100 caractères.' });
+    if(text.length < 2 || text.length >= 1000) {
+        return res.status(400).json({ error: 'Le texte doit avoir une longueur de 3 à 100 caractères.' });
     }
 
     getUserById(req.userId)
         .then(user => {
             if(!user) return res.status(400).json({ error: "L'utilisateur n'existe pas !" });
 
-            return queryCreateComment(user.id, text);
+            return queryCreateComment(user.id, text, post_id);
         })
         .then(comment => {
             res.status(200).json({ success: 'Le commentaire a bien été posté !' });
@@ -160,12 +161,13 @@ function getCommentById(id) {
     })
 }
 
-function queryCreateComment(userId, text) {
+function queryCreateComment(userId, text, postId) {
     return new Promise((resolve, reject) => {
 
         const new_comment = models.Comment.create({
             text: text,
-            UserId: userId
+            userID: userId,
+            postID: postId
         });
 
         if(new_comment) {

@@ -16,6 +16,14 @@
                 @change="selectFile"
             />
 
+            <!-- Text input -->
+            <b-form-input
+                id="form-text"
+                placeholder="Entrer un texte"
+                v-model="text"
+                type="text"
+            ></b-form-input>
+
             <!-- Submit Button -->
             <b-button class="float-right" type="submit" variant="primary">Valider</b-button>
         </b-form>
@@ -28,6 +36,7 @@
     export default {
         data () {
             return {
+                text: '',
                 imgPreview: '',
                 file: '',
                 error: ''
@@ -41,12 +50,13 @@
             async createMedia() {
                 const formData = new FormData();
                 formData.append('file', this.file);
+                formData.append('text', this.text);
 
                 try {
-                    let response = await axios.post("medias", formData);
+                    let response = await axios.post("posts", formData);
 
                     this.$router.replace({
-                        name: 'mediasList',
+                        name: 'postsList',
                         params: { message: response.data.success}
                     })
                     

@@ -10,13 +10,13 @@ module.exports = (sequelize, DataTypes) => {
 
     models.Comment.belongsTo(models.User, {
       foreignKey: {
-        allowNull: false
+        allowNull: true
       }
     });
 
     models.Comment.belongsTo(models.Post, {
       foreignKey: {
-        allowNull: false
+        allowNull: true
       }
     });
   };
