@@ -1,27 +1,37 @@
 <template>
     <div>
-        <b-row>
-            <b-col sm="8">
-                <h3>Mon profil</h3>
-            </b-col>
-            <b-col sm="4">
-                <div class="float-right">
-                    <router-link :to="{ name: 'updateUser', params: { userId: user.id}}">
-                        <b-button variant="warning">Modifier</b-button>
-                    </router-link>
+        <b-card class="mb-4">
+            <b-row>
+                <b-col sm="8">
+                    <h4 class="mb-0">{{ user.fullname }}</h4>
+                </b-col>
+                <b-col sm="4">
+                    <div class="float-right">
+                        <router-link :to="{ name: 'updateUser', params: { userId: user.id}}">
+                            <b-icon icon="gear-fill" font-scale="1.5" v-b-popover.hover.left="'Modifier mon profil'"></b-icon>
+                        </router-link>
 
-                    <b-button v-on:click="deleteUser" variant="danger" class="ml-2">Supprimer</b-button>
-                </div>
-            </b-col>
-        </b-row>
-        <hr>
-        <b-alert show dismissible fade variant="success" v-if="$route.params.message"> {{ $route.params.message }}</b-alert>
+                            
+                        <a href="#" v-on:click.prevent="deleteUser">
+                            <b-icon
+                                icon="trash-fill"
+                                class="ml-3"
+                                variant="danger"
+                                font-scale="1.5"
+                                v-b-popover.hover.bottom="'Supprimer mon compte'"
+                            ></b-icon>
+                        </a>
+                    </div>
+                </b-col>
+            </b-row>
+            <hr>
+            <b-alert show dismissible fade variant="success" v-if="$route.params.message"> {{ $route.params.message }}</b-alert>
 
-        <img :src="user.imgUrl" :alt="user.lastname" class="mb-3" width="400">
+            <img :src="user.imgUrl" :alt="user.lastname" class="mb-3" width="400">
 
-        <p>Nom : {{ user.lastname }}</p>
-        <p>Prenom : {{ user.firstname }}</p>
-        <p>Email : {{ user.email }}</p>
+            <p>Bio : {{ user.bio }}</p>
+            <!-- <p>Email : {{ user.email }}</p> -->
+        </b-card>
     </div>
 </template>
 
@@ -43,11 +53,10 @@
             async deleteUser() {
                 
                 try {
-                    let response = await axios.delete("users/me");
+                    let response = await axios.delete("users/"+this.user.id);
                     console.log(response);
 
                     localStorage.clear();
-                    
                     document.location.reload(true);
 
                     this.$router.replace({

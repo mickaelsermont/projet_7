@@ -34,7 +34,7 @@
             getPosts() {
                 axios.get('posts').then(response => {
                     this.posts = response.data
-                    console.log(response.data);
+                    // console.log(response.data);
                 });
             }
         },

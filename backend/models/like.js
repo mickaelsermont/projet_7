@@ -9,13 +9,15 @@ module.exports = (sequelize, DataTypes) => {
         // associations can be defined here
         models.Like.belongsTo(models.User, {
         foreignKey: {
-            allowNull: false
+            allowNull: true,
+            onDelete: 'CASCADE'
         }
         });
 
         models.Like.belongsTo(models.Post, {
         foreignKey: {
-            allowNull: false
+            allowNull: true,
+            onDelete: 'CASCADE'
         }
         });
     };

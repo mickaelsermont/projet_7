@@ -10,9 +10,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {});
   User.associate = function(models) {
     // associations can be defined here
-    models.User.hasMany(models.Post);
-    models.User.hasMany(models.Comment);
-    models.User.hasMany(models.Like);
+    models.User.hasMany(models.Post, { onDelete: 'CASCADE' });
+    models.User.hasMany(models.Comment, { onDelete: 'CASCADE' });
+    models.User.hasMany(models.Like, { onDelete: 'CASCADE' });
   };
   return User;
 };

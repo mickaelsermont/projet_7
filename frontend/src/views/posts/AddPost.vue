@@ -78,7 +78,7 @@
     }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
     input[type='file']{
         position: absolute;
         margin-top: 3px;

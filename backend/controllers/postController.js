@@ -69,21 +69,20 @@ exports.updatePost = (req, res) => {
             }
 
             // Reprend l'image dans la bdd si aucune image est ajoutée
-            if(!req.file) { 
+            if(!req.file ) { 
                 imageUrl = post.mediaUrl; 
             } else {
                 imageUrl = `${req.protocol}://${req.get('host')}/images/posts/${req.file.filename}`;
 
-                // Supprime l'ancienne image
+                // Supprime l'ancienne image sauf "default.jpg"
                 const filename = post.mediaUrl.split('/images/')[1];
 
                 fs.unlink("images/"+filename, function (error) {
                     if (error) throw error;
                     // si pas d'erreur, l'image est effacé avec succès !
                     console.log('Image supprimée !');
-                }); 
+                });
             }
-
             return queryUpdatePost(post, imageUrl, message);
         })
         .then(results => {
@@ -98,7 +97,9 @@ exports.updatePost = (req, res) => {
 exports.deletePost = (req, res) => {
 
     getPostById(req.params.id)
-        .then(post => {
+        .then(data => {
+            const post = data.dataValues;
+            console.log(post);
             if(!post) return res.status(400).json({ error: "La publication n'existe pas !" });
             
             // Vérifie si c'est l'auteur ou un admin sinon pas accès
@@ -106,14 +107,16 @@ exports.deletePost = (req, res) => {
                 if(!req.isAdmin) return res.status(401).json({ error: 'Accès interdit !' });
             }
 
-            // Supprime l'ancienne image
-            const filename = post.mediaUrl.split('/images/')[1];
-
-            fs.unlink("images/"+filename, function (error) {
-                if (error) throw error;
-                // si pas d'erreur, l'image est effacé avec succès !
-                console.log('Image supprimée !');
-            }); 
+            if(!post.mediaUrl) {
+                // Supprime l'ancienne image
+                const filename = post.mediaUrl.split('/images/')[1];
+                
+                fs.unlink("images/"+filename, function (error) {
+                    if (error) throw error;
+                    // si pas d'erreur, l'image est effacé avec succès !
+                    console.log('Image supprimée !');
+                }); 
+            }
 
             return queryDeletePost(post);
         })
@@ -124,6 +127,46 @@ exports.deletePost = (req, res) => {
             res.status(400).json({ error });
         })
 }
+
+// ############# Like / Unlike #############
+
+// Like a post
+exports.likePost = (req, res) => {
+    const post_id = req.body.post_id;
+    const user_id = req.userId;
+
+    getPostById(post_id)
+        .then(post => {
+            if(!post) return res.status(400).json({ error: "La publication n'existe pas !" });
+
+            queryIncrementLikePost(post, user_id);
+        })
+        .then(results => {
+            res.status(200).json({ success: 'Publication liké !' });
+        })
+        .catch(error => {
+            res.status(400).json({ error });
+        })
+};
+
+// Unlike a post
+exports.unlikePost = (req, res) => {
+    const post_id = req.body.post_id;
+    const user_id = req.userId;
+
+    getPostById(post_id)
+        .then(post => {
+            if(!post) return res.status(400).json({ error: "La publication n'existe pas !" });
+
+            queryDecrementLikePost(post, user_id);
+        })
+        .then(results => {
+            res.status(200).json({ success: 'Publication liké !' });
+        })
+        .catch(error => {
+            res.status(400).json({ error });
+        })
+};
 
 // Functions ----------------------------------------
 function getUserById(id) {
@@ -189,6 +232,30 @@ function getPostById(id) {
     })
 }
 
+// function getAllPostsById(id) {
+//     return new Promise((resolve, reject) => {
+
+//         const post = models.Post.findAll({
+//             where: { id: id },
+//             include: [{
+//                 model: models.User,
+//                 attributes: ['fullname' , 'imgUrl']
+//             }, {
+//                 model: models.Comment,
+//                 include: [{ 
+//                     model: models.User
+//                 }]
+//             }]
+//         });
+
+//         if(post) {
+//             resolve(post);
+//         } else {
+//             reject(Error('Aucune publication trouvée !'));
+//         }
+//     })
+// }
+
 function queryCreatePost(userId, image, message) {
     return new Promise((resolve, reject) => {
 
@@ -210,14 +277,14 @@ function queryCreatePost(userId, image, message) {
 function queryUpdatePost(post, image, message) {
     return new Promise((resolve, reject) => {
 
-        const updateMedia = post.update({
+        const update_Post = post.update({
             text: message,
             mediaUrl: image,
             updatedAt: new Date()
         });
 
-        if(updateMedia) {
-            resolve(updateMedia);
+        if(update_Post) {
+            resolve(update_Post);
         } else {
             reject(Error("Erreur dans la creation de la publication !"));
         }
@@ -226,13 +293,97 @@ function queryUpdatePost(post, image, message) {
 
 function queryDeletePost(post) {
     return new Promise((resolve, reject) => {
+        // var remove_post;
+        // var remove_likes_post;
+        // var remove_comments_post;
 
-        const remove_post = post.destroy();
+        // const comments = models.Comment.findAll({
+        //     where: {
+        //         postID: post.id
+        //     }
+        // });
+
+        // if(!comments) {
+        //     remove_comments_post = models.Comment.destroy({
+        //         where: {
+        //             postID: post.id
+        //         }
+        //     });
+        // }
+
+        // const likes = models.Like.findAll({
+        //     where: {
+        //         postID: post.id
+        //     }
+        // });
+
+        // if(!likes) {
+        //     remove_likes_post = models.Like.destroy({
+        //         where: {
+        //             postID: post.id
+        //         }
+        //     });
+        // }
+
+        // if(remove_comments_post & remove_likes_post) {
+        // }
+        remove_post = post.destroy();
 
         if(remove_post) {
             resolve(true);
         } else {
-            reject(Error("Erreur dans la suppression de la publication !"));
+            reject("Erreur");
+        }
+    })
+}
+
+// update post for increment likes
+function queryIncrementLikePost(post, user_id) {
+    return new Promise((resolve, reject) => {
+        const value = post.countLikes + 1;
+        
+        const updatePost = post.update({
+            countLikes: value,
+            updatedAt: new Date()
+        });
+
+        const insertLike = models.Like.create({
+            UserId: user_id,
+            PostId: post.id,
+            createdAt: new Date()
+        });
+
+        if(updatePost & insertLike) {
+            resolve(updatePost);
+        } else {
+            reject(Error("Erreur"));
+        }
+    })
+}
+
+// update post for decrement likes
+function queryDecrementLikePost(post, user_id) {
+    return new Promise((resolve, reject) => {
+        const value = post.countLikes - 1;
+
+        if(value < 0) { value = 0; }
+
+        const updatePost = post.update({
+            countLikes: value,
+            updatedAt: new Date()
+        });
+
+        const deleteLike = models.Like.destroy({
+            where: {
+                userID: user_id,
+                postID: post.id
+            }
+        });
+
+        if(updatePost & deleteLike) {
+            resolve(updatePost);
+        } else {
+            reject(Error("Erreur"));
         }
     })
 }

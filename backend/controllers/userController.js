@@ -166,14 +166,15 @@ exports.getUserProfile = (req, res) => {
 exports.updateUserProfile = (req, res) => {
 
     // Check input null
-    if (!req.body.email || !req.body.fullname || !req.body.bio) {
+    if ( !req.body.fullname || !req.body.bio) {
         return res.status(400).json({ error: 'Certains champs sont vides !' });
     }
 
     // Check email
-    if (!EMAIL_REGEX.test(req.body.email)) {
-        return res.status(400).json({ error: "Adresse mail non valide" });
-    }
+    // req.body.email ||
+    // if (!EMAIL_REGEX.test(req.body.email)) {
+    //     return res.status(400).json({ error: "Adresse mail non valide" });
+    // }
 
     // Check first name
     if (req.body.fullname.length > 26 || req.body.fullname.length < 2) {
@@ -201,14 +202,16 @@ exports.updateUserProfile = (req, res) => {
             } else {
                 imageUrl = `${req.protocol}://${req.get('host')}/images/profiles/${req.file.filename}`;
 
-                // Supprime l'ancienne image
-                const filename = user.imgUrl.split('/images/')[1];
+                // Supprime l'ancienne image sauf default.jpg
+                if(req.file.filename !== "default.jpg") {
+                    const filename = user.imgUrl.split('/images/')[1];
 
-                fs.unlink("images/"+filename, function (error) {
-                    if (error) return console.log(error);
-                    // si pas d'erreur, l'image est effacé avec succès !
-                    console.log('Image supprimée !');
-                }); 
+                    fs.unlink("images/"+filename, function (error) {
+                        if (error) return console.log(error);
+                        // si pas d'erreur, l'image est effacé avec succès !
+                        console.log('Image supprimée !');
+                    }); 
+                }
             }
 
             return queryUpdateUser(user, req.body, imageUrl);
@@ -254,7 +257,7 @@ function getUserById(id) {
     return new Promise((resolve, reject) => {
 
         const user = models.User.findOne({
-            attributes: ['id', 'fullname', 'email', 'imgUrl', 'isAdmin'],
+            attributes: ['id', 'fullname', 'email', 'bio', 'imgUrl', 'isAdmin'],
             where: { id: id }
         });
 
@@ -291,7 +294,7 @@ function queryUpdateUser(user, formParams, imageUrl) {
             {
                 imgUrl: imageUrl,
                 bio: formParams.bio,
-                email: formParams.email,
+                // email: formParams.email,
                 fullname: formParams.fullname,
                 updatedAt: new Date()
             }

@@ -25,18 +25,17 @@ exports.router = (function() {
 
     // Comments routes
     router.get('/comments/', auth, comment.getAllComments);
-    // router.get('/comments/:id', auth, comment.getComment);
     router.post('/comments/', auth, comment.createComment);
-    // router.put('/comments/:id', auth, comment.updateComment);
     router.delete('/comments/:id', auth, comment.deleteComment);
 
     // Posts routes
     router.get('/posts/', auth, post.getAllPosts);
     router.get('/posts/:id', auth, post.getPost);
     router.post('/posts/', auth, multer, post.createPost);
+    router.post('/posts/:id/like', auth, post.likePost);
+    router.post('/posts/:id/unlike', auth, post.unlikePost);
     router.put('/posts/:id', auth, multer, post.updatePost);
     router.delete('/posts/:id', auth, post.deletePost);
-
 
   return router;
 })();
