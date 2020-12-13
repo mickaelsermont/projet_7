@@ -29,6 +29,7 @@ exports.getPost = (req, res) => {
 
 // Create new post
 exports.createPost = (req, res) => {
+    console.log(req);
     var imageUrl = null;
     var message = req.body.text;
 

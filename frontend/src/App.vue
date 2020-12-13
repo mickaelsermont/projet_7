@@ -3,7 +3,11 @@
     <NavigationBar />
     
     <b-container>
-      <router-view />
+      <b-row>
+        <b-col md="7" offset-md="3">
+          <router-view />
+        </b-col>
+      </b-row>
     </b-container>
   </div>
 </template>

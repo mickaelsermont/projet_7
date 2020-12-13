@@ -8,7 +8,13 @@
                         <b-img :src="post.User.imgUrl" width="48" height="48" :alt="post.User.fullname" rounded></b-img>
                     </template>
 
-                    <h5 class="mt-0 mb-0">{{ post.User.fullname }}</h5>
+                    <div class="line_post">
+                        <h5 class="mt-0 mb-0">{{ post.User.fullname }}</h5>
+                        
+                        <span v-if="post.UserId === user.id" v-on:click="deletePost(post.id)">
+                            <b-button class="py-0" pill variant="outline-danger">Supprimer</b-button>
+                        </span>
+                    </div>
                     <em class="mb-0">{{ post.createdAt | moment("from", "now") }}</em>
 
                     <p left class="mt-2 mb-0">{{ post.text }}</p>
@@ -37,9 +43,12 @@
                         <b-img :src="review.User.imgUrl" width="40" height="40" :alt="review.User.fullname" rounded></b-img>
                     </template>
 
-                    <h6 class="m-0">{{ review.User.fullname }}
-                    </h6>
-                        <span v-if="review.UserId === user.id" v-on:click="deleteComment(review.id)">Delete</span>
+                    <div class="line_post">
+                        <h6 class="m-0">{{ review.User.fullname }}</h6>
+                        <span v-if="review.UserId === user.id" v-on:click="deleteComment(review.id)">
+                            <b-button class="py-0" pill variant="outline-danger">Supprimer</b-button>
+                        </span>
+                    </div>
                     <p>{{ review.text }}</p>
                 </b-media>
 
@@ -109,6 +118,9 @@
                     .catch((error) => {
                         console.log(error);
                     });
+            },
+            deletePost(id) {
+                alert(id);
             }
         },
         computed: {

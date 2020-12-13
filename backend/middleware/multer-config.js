@@ -16,10 +16,8 @@ const storage = multer.diskStorage({
 
     if(domaine == "auth" || domaine == "users") {
       target = 'images/profiles';
-    } else if (domaine == "medias") {
-      target = 'images/medias';
-    } else if(domaine == "items") {
-      target = 'images/items';
+    } else if (domaine == "posts") {
+      target = 'images/posts';
     }
 
     callback(null, target);

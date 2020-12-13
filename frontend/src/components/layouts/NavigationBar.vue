@@ -8,37 +8,32 @@
                     </router-link>
                 </b-navbar-brand>
 
-                <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
+                <b-navbar-nav class="nav-line">
+                    <template v-if="authentificated">
+                        <b-nav-item class="nav-icon">
+                            <router-link :to="{ name: 'addPost'}">
+                                <b-icon icon="plus-circle" font-scale="1.5" v-b-popover.hover.left="'Ajouter une publication'"></b-icon>
+                            </router-link>
+                        </b-nav-item>
+                        <b-nav-item class="nav-icon">
+                            <router-link :to="{ name: 'userProfile'}">
+                                <b-icon icon="person-fill" font-scale="1.5" v-b-popover.hover.bottom="user.fullname"></b-icon>
+                            </router-link>
+                        </b-nav-item>
+                        <b-nav-item @click.prevent="signOut" class="nav-icon">
+                            <b-icon icon="box-arrow-right" font-scale="1.5" v-b-popover.hover.right="'Deconnexion'"></b-icon>
+                        </b-nav-item>
+                    </template>
 
-                <b-collapse id="nav-collapse" is-nav>
-
-                    <b-navbar-nav class="ml-auto">
-                        <template v-if="authentificated">
-                            <b-nav-item>
-                                <router-link :to="{ name: 'addPost'}">
-                                    <b-icon icon="plus-circle" font-scale="1.5" v-b-popover.hover.left="'Ajouter une publication'"></b-icon>
-                                </router-link>
-                            </b-nav-item>
-                            <b-nav-item>
-                                <router-link :to="{ name: 'userProfile'}">
-                                    <b-icon icon="person-fill" font-scale="1.5" v-b-popover.hover.bottom="user.fullname"></b-icon>
-                                </router-link>
-                            </b-nav-item>
-                            <b-nav-item @click.prevent="signOut">
-                                <b-icon icon="box-arrow-right" font-scale="1.5" v-b-popover.hover.right="'Deconnexion'"></b-icon>
-                            </b-nav-item>
-                        </template>
-
-                        <template v-else>
-                            <b-nav-item href="#">
-                                <router-link :to="{ name: 'login'}">Connexion</router-link>
-                            </b-nav-item>
-                            <b-nav-item href="#">
-                                <router-link :to="{ name: 'register'}">Inscription</router-link>
-                            </b-nav-item>
-                        </template>
-                    </b-navbar-nav>
-                </b-collapse>
+                    <template v-else>
+                        <b-nav-item href="#">
+                            <router-link :to="{ name: 'login'}">Connexion</router-link>
+                        </b-nav-item>
+                        <b-nav-item href="#">
+                            <router-link :to="{ name: 'register'}">Inscription</router-link>
+                        </b-nav-item>
+                    </template>
+                </b-navbar-nav>
             </b-container>
         </b-navbar>                
     </div>
@@ -81,5 +76,12 @@
     }
     .bg-darkblue {
         background-color: rgb(35, 49, 75)!important;
+    }
+    .nav-line {
+        display: flex;
+        flex-direction: row;
+    }
+    .nav-icon {
+        margin-left: 13px;
     }
 </style>
